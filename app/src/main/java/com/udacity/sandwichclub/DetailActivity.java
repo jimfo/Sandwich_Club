@@ -36,6 +36,7 @@ public class DetailActivity extends AppCompatActivity {
     public static final String EXTRA_POSITION = "extra_position";
     private static final int DEFAULT_POSITION = -1;
 
+    Animation scaleUp, scaleDown;
     LinearLayout detailActivityLl;
     TextView originTv, akaTv, detail_aka_tv;
     TextView ingredientsTv, descriptionTv;
@@ -47,6 +48,12 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        scaleUp = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.scale_up);
+
+        scaleDown = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.scale_down);
 
         int position = -1;
         final ImageView ingredientsIv = findViewById(R.id.image_iv);
@@ -205,11 +212,10 @@ public class DetailActivity extends AppCompatActivity {
         switch(v.getId()){
             case R.id.description_btn:
                 if (descriptionTv .getVisibility() == View.GONE) {
-                    animate = new ScaleAnimation(1, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-                    animate.setDuration(250);
-                    animate.setFillAfter(true);
+
                     descriptionTv.setVisibility(View.VISIBLE);
-                    descriptionTv.startAnimation(animate);
+                    descriptionTv.startAnimation(scaleUp);
+
                     sv.post(new Runnable() {
                         public void run() {
                             sv.fullScroll(View.FOCUS_DOWN);
@@ -217,20 +223,16 @@ public class DetailActivity extends AppCompatActivity {
                     });
                 }
                 else{
-                    animate = new ScaleAnimation(1, 1, 1, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-                    animate.setDuration(250);
-                    animate.setFillAfter(true);
                     descriptionTv.setVisibility(View.GONE);
-                    descriptionTv.startAnimation(animate);
+                    descriptionTv.startAnimation(scaleDown);
                 }
                 break;
             case R.id.ingredients_btn:
                 if (ingredientsTv .getVisibility() == View.GONE) {
-                    animate = new ScaleAnimation(1, 1, 0, 1, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-                    animate.setDuration(250);
-                    animate.setFillAfter(true);
+                    
                     ingredientsTv.setVisibility(View.VISIBLE);
-                    ingredientsTv.startAnimation(animate);
+                    ingredientsTv.startAnimation(scaleUp);
+
                     sv.post(new Runnable() {
                         public void run() {
                             sv.fullScroll(View.FOCUS_DOWN);
@@ -238,11 +240,8 @@ public class DetailActivity extends AppCompatActivity {
                     });
                 }
                 else{
-                    animate = new ScaleAnimation(1, 1, 1, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-                    animate.setDuration(550);
-                    animate.setFillAfter(true);
                     ingredientsTv.setVisibility(View.GONE);
-                    ingredientsTv.startAnimation(animate);
+                    ingredientsTv.startAnimation(scaleDown);
                 }
                 break;
         }
