@@ -165,9 +165,9 @@ public class DetailActivity extends AppCompatActivity {
 
         detailActivityLl.setBackgroundColor(Color.rgb(r, g, b));
 
-        int textRed   = (int) (r * (1 - .5));
-        int textGreen = (int) (r * (1 - .75));
-        int textBlue  = (int) (r * (1 - .75));
+        int textRed   = (int) (r * (1 - .75));
+        int textGreen = (int) (g * (1 - .75));
+        int textBlue  = (int) (b * (1 - .75));
 
         ingredientsTv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
         ingredientsBtn.setTextColor(Color.rgb(textRed, textGreen, textBlue));
@@ -229,7 +229,7 @@ public class DetailActivity extends AppCompatActivity {
                 break;
             case R.id.ingredients_btn:
                 if (ingredientsTv .getVisibility() == View.GONE) {
-                    
+
                     ingredientsTv.setVisibility(View.VISIBLE);
                     ingredientsTv.startAnimation(scaleUp);
 
