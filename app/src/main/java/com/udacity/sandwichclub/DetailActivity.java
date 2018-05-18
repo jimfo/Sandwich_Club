@@ -1,23 +1,18 @@
 package com.udacity.sandwichclub;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
-import android.util.Log;
+import android.text.TextUtils;
+
 import android.view.View;
+
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,9 +22,6 @@ import com.squareup.picasso.Target;
 import com.udacity.sandwichclub.model.Sandwich;
 import com.udacity.sandwichclub.utils.JsonUtils;
 
-import java.io.IOException;
-import java.net.URL;
-
 public class DetailActivity extends AppCompatActivity {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
@@ -37,7 +29,6 @@ public class DetailActivity extends AppCompatActivity {
     private static final int DEFAULT_POSITION = -1;
 
     Animation scaleUp, scaleDown;
-    LinearLayout detailActivityLl;
     TextView originTv, akaTv, detail_aka_tv;
     TextView ingredientsTv, descriptionTv;
     TextView detail_place_of_origin_tv;
@@ -57,6 +48,7 @@ public class DetailActivity extends AppCompatActivity {
 
         int position = -1;
         final ImageView ingredientsIv = findViewById(R.id.image_iv);
+
         originTv = findViewById(R.id.origin_tv);
         akaTv = findViewById(R.id.also_known_tv);
         detail_aka_tv = findViewById(R.id.detail_also_known_as_tv);
@@ -65,7 +57,6 @@ public class DetailActivity extends AppCompatActivity {
         descriptionTv = findViewById(R.id.description_tv);
         descriptionBtn = findViewById(R.id.description_btn);
         detail_place_of_origin_tv = findViewById(R.id.detail_place_of_origin_tv);
-        detailActivityLl = findViewById(R.id.detail_activity_ll);
         sv = findViewById(R.id.scrollview);
 
         Intent intent = getIntent();
@@ -73,8 +64,7 @@ public class DetailActivity extends AppCompatActivity {
         // If intent is null send message to user
         if (intent == null) {
             closeOnError();
-        }
-        else {
+        } else {
             position = intent.getIntExtra(EXTRA_POSITION, DEFAULT_POSITION);
 
             if (position == DEFAULT_POSITION) {
@@ -94,24 +84,30 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
 
-        populateUI(sandwich);
-
         // Get the image / set the image
-        Picasso.with(this).load(sandwich.getImage()).into(new Target() {
+        final Target target = new Target() {
             @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
                 ingredientsIv.setImageBitmap(bitmap);
-                getColors(bitmap);
             }
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
+
             }
 
             @Override
             public void onPrepareLoad(Drawable placeHolderDrawable) {
+
             }
-        });
+        };
+        ingredientsIv.setTag(target);
+        Picasso.with(this).load(sandwich.getImage())
+                .placeholder(R.drawable.no_image_avalable)
+                .error(R.drawable.no_image_avalable)
+                .into(target);
+
+        populateUI(sandwich);
 
         setTitle(sandwich.getMainName());
     }
@@ -125,93 +121,37 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     /**
-     * Purpose : to get the average color of the image
-     * @param bitmap : The image of the sandwich
-     */
-    private void getColors(Bitmap bitmap ){
-
-        int redColors = 0;
-        int greenColors = 0;
-        int blueColors = 0;
-        int pixelCount = 0;
-
-        for (int y = 0; y < bitmap.getHeight(); y++)
-        {
-            for (int x = 0; x < bitmap.getWidth(); x++)
-            {
-                int c = bitmap.getPixel(x, y);
-                pixelCount++;
-                redColors += Color.red(c);
-                greenColors += Color.green(c);
-                blueColors += Color.blue(c);
-            }
-        }
-
-        int red = (redColors/pixelCount);
-        int green = (greenColors/pixelCount);
-        int blue = (blueColors/pixelCount);
-
-        setColors(red, green, blue);
-    }
-
-    /**
-     * Purpose : Set colors of widgets and text. Widgets will be lighter than background color
-     * of LinearLayout, Text will be darker
-     * @param r : int red color
-     * @param g : int green color
-     * @param b : int blue color
-     */
-    private void setColors(int r, int g, int b){
-
-        detailActivityLl.setBackgroundColor(Color.rgb(r, g, b));
-
-        int textRed   = (int) (r * (1 - .75));
-        int textGreen = (int) (g * (1 - .75));
-        int textBlue  = (int) (b * (1 - .75));
-
-        ingredientsTv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        ingredientsBtn.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        descriptionTv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        descriptionBtn.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        akaTv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        originTv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        detail_aka_tv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-        detail_place_of_origin_tv.setTextColor(Color.rgb(textRed, textGreen, textBlue));
-
-        int bgRed   = (int) (r + (255 - r) * .25);
-        int bgGreen = (int) (g + (255 - g) * .25);
-        int bgBlue  = (int) (b + (255 - b) * .25);
-
-        ingredientsBtn.setBackgroundColor(Color.rgb(bgRed, bgGreen, bgBlue));
-        descriptionBtn.setBackgroundColor(Color.rgb(bgRed, bgGreen, bgBlue));
-    }
-
-    /**
      * Purpose : Populate the UI with sandwich data
+     *
      * @param sw : Sandwich object
      */
     private void populateUI(Sandwich sw) {
-        originTv.append(sw.getPlaceOfOrigin());
-        descriptionTv.append(sw.getDescription());
 
-
-        for (int i = 0; i < sw.getAlsoKnownAs().size(); i++) {
-            akaTv.append(sw.getAlsoKnownAs().get(i) + "\n");
+        if (!sw.getPlaceOfOrigin().equals("")) {
+            originTv.setText(sw.getPlaceOfOrigin());
         }
 
-        for (int i = 0; i < sw.getIngredients().size(); i++) {
-            ingredientsTv.append(sw.getIngredients().get(i) + "\n"); }
+        if (!sw.getDescription().equals("")) {
+            descriptionTv.setText(sw.getDescription());
+        }
+
+        String akaString = TextUtils.join("\n", sw.getAlsoKnownAs());
+        String ingString = TextUtils.join("\n", sw.getIngredients());
+
+        akaTv.setText(akaString);
+        ingredientsTv.setText(ingString);
     }
 
     /**
      * Purpose : To provide some animation (Show / Hide text)
+     *
      * @param v : Will be a button pressed
      */
-    public void showTextView(View v){
-        Animation animate;
-        switch(v.getId()){
+    public void showTextView(View v) {
+
+        switch (v.getId()) {
             case R.id.description_btn:
-                if (descriptionTv .getVisibility() == View.GONE) {
+                if (descriptionTv.getVisibility() == View.GONE) {
 
                     descriptionTv.setVisibility(View.VISIBLE);
                     descriptionTv.startAnimation(scaleUp);
@@ -221,14 +161,19 @@ public class DetailActivity extends AppCompatActivity {
                             sv.fullScroll(View.FOCUS_DOWN);
                         }
                     });
-                }
-                else{
-                    descriptionTv.setVisibility(View.GONE);
+                } else {
                     descriptionTv.startAnimation(scaleDown);
+                    descriptionTv.setVisibility(View.GONE);
+
+                    sv.post(new Runnable() {
+                        public void run() {
+                            sv.fullScroll(View.FOCUS_UP);
+                        }
+                    });
                 }
                 break;
             case R.id.ingredients_btn:
-                if (ingredientsTv .getVisibility() == View.GONE) {
+                if (ingredientsTv.getVisibility() == View.GONE) {
 
                     ingredientsTv.setVisibility(View.VISIBLE);
                     ingredientsTv.startAnimation(scaleUp);
@@ -238,10 +183,15 @@ public class DetailActivity extends AppCompatActivity {
                             sv.fullScroll(View.FOCUS_DOWN);
                         }
                     });
-                }
-                else{
-                    ingredientsTv.setVisibility(View.GONE);
+                } else {
                     ingredientsTv.startAnimation(scaleDown);
+                    ingredientsTv.setVisibility(View.GONE);
+
+                    sv.post(new Runnable() {
+                        public void run() {
+                            sv.fullScroll(View.FOCUS_DOWN);
+                        }
+                    });
                 }
                 break;
         }
